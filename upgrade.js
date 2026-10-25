@@ -75,7 +75,7 @@ $('screenBtn').onclick=async()=>{
 let monitorWindow=null,monitorFrame=0;
 $('floatBtn').onclick=async()=>{
  if(monitorWindow&&!monitorWindow.closed){monitorWindow.focus();return}
- if(!window.documentPictureInPicture?.requestWindow){toast('此瀏覽器不支援置頂監看。已開啟一般監看視窗，請與原教材並排。');window.open('output.html?monitor=1','_blank','popup,width=660,height=450');return}
+ if(!window.documentPictureInPicture?.requestWindow){toast('此瀏覽器不支援置頂監看。已開啟一般監看視窗，請與原教材並排。');window.open('output.html?monitor=1&v=20261025-10','_blank','popup,width=660,height=450');return}
  try{const pip=await window.documentPictureInPicture.requestWindow({width:640,height:430});monitorWindow=pip;
   const doc=pip.document;doc.title='車城國小｜浮動監看';const style=doc.createElement('style');style.textContent='body{margin:0;background:#172d25;color:#fff;font:12px sans-serif}canvas{width:100%;aspect-ratio:16/9;display:block;cursor:pointer}nav{display:flex;align-items:center;gap:8px;padding:10px}button{padding:7px 12px;border:0;border-radius:6px;cursor:pointer}span{flex:1;font-size:11px;color:#c3d2c7}';doc.head.append(style);
   const view=doc.createElement('canvas');view.width=1280;view.height=720;view.setAttribute('aria-label','置頂合成監看畫面');doc.body.append(view);const nav=doc.createElement('nav');
@@ -101,4 +101,4 @@ const baseStopAll=$('stopAll').onclick;$('stopAll').onclick=()=>{stopMic();$('mi
 window.addEventListener('beforeunload',()=>{micStream?.getTracks().forEach(t=>t.stop());if(micURL)URL.revokeObjectURL(micURL);monitorWindow?.close()});
 
 window.renderPresenterForBrowser=(c,w,h)=>presenter(c,[0,0,w,h]);
-$('interactiveBtn').onclick=()=>{const raw=$('interactiveURL').value.trim();try{const url=new URL(raw);if(url.protocol!=='https:')throw Error('請貼上 https:// 開頭的教材網址。');const dir=new URL('./',location.href);if(url.origin===dir.origin&&[dir.pathname,dir.pathname+'index.html',dir.pathname+'output.html',dir.pathname+'browser.html'].includes(url.pathname))throw Error('請輸入原教材網址，不可嵌入本站。');const win=window.open('browser.html#'+encodeURIComponent(url.href),'_blank');if(!win)toast('請允許此網站開啟彈出式視窗。');else toast('在互動網站分頁操作並分享該分頁；若原網站拒絕嵌入，請改用原分頁擷取＋浮動監看。')}catch(e){toast(e.message)}};
+$('interactiveBtn').onclick=()=>{const raw=$('interactiveURL').value.trim();try{const url=new URL(raw);if(url.protocol!=='https:')throw Error('請貼上 https:// 開頭的教材網址。');const dir=new URL('./',location.href);if(url.origin===dir.origin&&[dir.pathname,dir.pathname+'index.html',dir.pathname+'output.html',dir.pathname+'browser.html'].includes(url.pathname))throw Error('請輸入原教材網址，不可嵌入本站。');const win=window.open('browser.html?v=20261025-10#'+encodeURIComponent(url.href),'_blank');if(!win)toast('請允許此網站開啟彈出式視窗。');else toast('在互動網站分頁操作並分享該分頁；若原網站拒絕嵌入，請改用原分頁擷取＋浮動監看。')}catch(e){toast(e.message)}};
