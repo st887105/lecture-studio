@@ -2,9 +2,9 @@
 // One generated local texture, animated by on-device Face Landmarker jaw data.
 const teacherImage=new Image(),teacherTexture=document.createElement('canvas');teacherTexture.width=562;teacherTexture.height=701;
 const teacherTextureCtx=teacherTexture.getContext('2d');let teacherReady=false,teacherFailed=false,teacherJaw=0,teacherDemoUntil=0,lastTeacherFrame=-Infinity;
-teacherImage.onload=()=>{teacherReady=true;$('avatarAssetStatus').textContent='已載入紅衣照片版似顏繪。開啟攝影機即可追蹤嘴型。'};
+teacherImage.onload=()=>{teacherReady=true;$('avatarAssetStatus').textContent='已載入最新版似顏繪。開啟攝影機即可追蹤嘴型。'};
 teacherImage.onerror=()=>{teacherFailed=true;$('avatarAssetStatus').textContent='角色圖片載入失敗，請重新整理；不會用通用人物代替。'};
-teacherImage.src='teacher-avatar-red.png?v=20261025-5';
+teacherImage.src='teacher-avatar-caricature.png?v=20261025-8';
 function trackedTeacherJaw(now){
  if(now<teacherDemoUntil)return Math.max(0,Math.sin(now/115)*.7+Math.sin(now/67)*.25);
  if(!state.camera||!state.workerReady||now-state.faceTime>650)return 0;
@@ -17,8 +17,8 @@ function drawTeacherTexture(now){
 
  const mx=W*Number($('mouthX').value)/100,my=H*Number($('mouthY').value)/100,half=W*Number($('mouthWidth').value)/200,gap=teacherJaw*H*.024;
  if(gap<.4)return;
- // A curved smile seam follows this specific generated portrait's lip landmarks.
- const seam=x=>{const n=Math.max(-1,Math.min(1,(x-mx)/half));return my-H*.0112*n*n-H*.0028*n};
+ // The lip seam is calibrated to the current caricature, without stretching its face.
+ const seam=x=>{const n=Math.max(-1,Math.min(1,(x-mx)/half));return my-H*.0024*n*n+H*.00086*n};
  const opening=x=>Math.max(0,1-((x-mx)/half)**2);
  g.save();g.beginPath();for(let x=mx-half;x<=mx+half;x+=1){const y=seam(x)-gap*.20*opening(x);if(x===mx-half)g.moveTo(x,y);else g.lineTo(x,y)}for(let x=mx+half;x>=mx-half;x-=1)g.lineTo(x,seam(x)+gap*.80*opening(x));g.closePath();g.fillStyle='#432320';g.fill();g.clip();
  if(teacherJaw>.18){g.fillStyle='#f1e4d4';for(let x=mx-half*.78;x<mx+half*.78;x+=1)g.fillRect(x,seam(x)-gap*.08,1,gap*.23*opening(x));}
