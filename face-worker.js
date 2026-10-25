@@ -1,0 +1,6 @@
+let detector;
+// Keep this a classic worker: MediaPipe's WASM loader uses importScripts().
+// Dynamic import supplies the public ESM API without creating a module worker.
+(async()=>{try{const {FaceLandmarker,FilesetResolver}=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs');const files=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm');detector=await FaceLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:'CPU'},runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:true,minFaceDetectionConfidence:.5,minTrackingConfidence:.5});postMessage({type:'ready'})}catch(e){postMessage({type:'error',message:String(e)})}})();
+self.onmessage=e=>{if(e.data.type!=='frame')return;const {bitmap,time}=e.data;try{if(!detector)throw Error('Model unavailable');const r=detector.detectForVideo(bitmap,time);postMessage({type:'face',landmarks:r.faceLandmarks[0]||null,blends:Object.fromEntries((r.faceBlendshapes[0]?.categories||[]).map(b=>[b.categoryName,b.score]))})}catch(err){postMessage({type:'error',message:String(err)})}finally{bitmap.close()}};
+
