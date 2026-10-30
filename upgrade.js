@@ -44,7 +44,7 @@ async function renderPDFPage(){
  const doc=pdfDoc,pageNumber=pdfPage,generation=pdfGeneration;if(!doc)return;
  pdfRenderTask?.cancel();$('pdfStatus').textContent=`正在準備第 ${pageNumber} 頁…`;
  try{const page=await doc.getPage(pageNumber);if(generation!==pdfGeneration||pdfPage!==pageNumber)return;
-  const v=page.getViewport({scale:1}),scale=Math.min(1600/v.width,1000/v.height),viewport=page.getViewport({scale});
+  const v=page.getViewport({scale:1}),scale=Math.min(2560/v.width,1440/v.height),viewport=page.getViewport({scale});
   const target=document.createElement('canvas');target.width=Math.ceil(viewport.width);target.height=Math.ceil(viewport.height);
   const task=page.render({canvasContext:target.getContext('2d'),viewport});pdfRenderTask=task;await task.promise;
   if(generation!==pdfGeneration||pdfPage!==pageNumber)return;pdfCanvas=target;state.source='pdf';state.stopped=false;state.paused=false;$('pauseBtn').textContent='暫停畫面';updatePages();$('pdfStatus').textContent=`共 ${doc.numPages} 頁。點合成畫面或用左右鍵換頁。`;
@@ -64,7 +64,7 @@ window.studioInfo=()=>({source:state.source,page:state.source==='pdf'?pdfPage:st
 function unsafeCapture(track){const surface=track.getSettings().displaySurface;if(!surface||surface==='monitor')return '整個螢幕可能包含工作室與輸出，已阻擋以避免無限鏡射。請選教材分頁，或匯入 PDF。';if(surface==='window'&&!$('allowWindow').checked)return '預設只接受瀏覽器分頁。PowerPoint 請先匯出 PDF，或勾選「允許獨立 PowerPoint 視窗」。';const handle=track.getCaptureHandle?.();if(handle?.handle===STUDIO_HANDLE)return '選到了本站工作室／輸出分頁，已停止擷取以避免鏡射。請改選原教材分頁。';return null}
 $('screenBtn').onclick=async()=>{
  if(!navigator.mediaDevices?.getDisplayMedia){toast('請使用桌面版 Chrome／Edge 擷取教材。');return}
- try{const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24,displaySurface:'browser'},audio:false,monitorTypeSurfaces:'exclude',selfBrowserSurface:'exclude',surfaceSwitching:'exclude'}),track=stream.getVideoTracks()[0];
+ try{const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24,displaySurface:'browser',width:{ideal:3840},height:{ideal:2160}},audio:false,monitorTypeSurfaces:'exclude',selfBrowserSurface:'exclude',surfaceSwitching:'exclude'}),track=stream.getVideoTracks()[0];try{track.contentHint="detail"}catch{}
   const problem=unsafeCapture(track);if(problem){stream.getTracks().forEach(t=>t.stop());toast(problem);return}
   releaseScreen();state.screen=stream;screen.srcObject=stream;await screen.play();state.source='screen';state.stopped=false;state.paused=false;$('pauseBtn').textContent='暫停畫面';$('stopScreen').hidden=false;updatePages();
   const guard=()=>{const message=unsafeCapture(track);if(message&&state.screen===stream){releaseScreen();toast(message)}};
@@ -82,7 +82,7 @@ $('floatBtn').onclick=async()=>{
   const prev=doc.createElement('button');prev.textContent='← 上一頁';prev.onclick=()=>navigate(-1);const next=doc.createElement('button');next.textContent='下一頁 →';next.onclick=()=>navigate(1);const label=doc.createElement('span');label.textContent='操作原教材時，這個視窗會保持置頂。';nav.append(prev,label,next);doc.body.append(nav);
   const hint=doc.createElement('p');hint.style.cssText='padding:0 10px;font-size:10px;color:#c3d2c7';hint.textContent='本機合成監看；不是 Meet 學員端回傳。請在 Meet 分享乾淨輸出分頁。';doc.body.append(hint);let syncPipTools=()=>{};if(window.LectureTools&&window.annotationAPI){const css=doc.createElement('link');css.rel='stylesheet';css.href=new URL('teaching-tools.css?v=20261030-11',location.href).href;doc.head.append(css);const tools=doc.createElement('div');doc.body.insertBefore(tools,nav);syncPipTools=LectureTools.mount(tools,window.annotationAPI);LectureTools.bind(view,window.annotationAPI,e=>{const r=view.getBoundingClientRect();return{x:(e.clientX-r.left)*1280/r.width,y:(e.clientY-r.top)*720/r.height}},syncPipTools);hint.textContent='直接在上方畫面標註或放大；Esc 取消工具。Meet 請分享乾淨輸出。'}
   view.onclick=e=>{const r=view.getBoundingClientRect();navigate(e.clientX-r.left<r.width/2?-1:1)};doc.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();navigate(-1)}if(e.key==='ArrowRight'){e.preventDefault();navigate(1)}});
-  const g=view.getContext('2d');function tick(){if(pip.closed)return;window.renderFrame();syncPipTools();g.drawImage(canvas,0,0);monitorFrame=pip.requestAnimationFrame(tick)}tick();pip.addEventListener('pagehide',()=>{pip.cancelAnimationFrame(monitorFrame);viewObserver.disconnect();monitorWindow=null});
+  const g=view.getContext('2d');function tick(){if(pip.closed)return;window.renderFrame();syncPipTools();g.drawImage(canvas,0,0,1280,720);monitorFrame=pip.requestAnimationFrame(tick)}tick();pip.addEventListener('pagehide',()=>{pip.cancelAnimationFrame(monitorFrame);viewObserver.disconnect();monitorWindow=null});
  }catch(err){toast('浮動監看未能開啟：'+err.message)}
 };
 $('lectureBtn').onclick=()=>{$('outputBtn').onclick();toast('在輸出頁按「全螢幕」或 F。PDF／圖片可直接點擊或用左右鍵換頁。')};
