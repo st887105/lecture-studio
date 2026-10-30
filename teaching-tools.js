@@ -34,6 +34,6 @@ window.LectureTools={
   const end=e=>{if(!handled(e))return;api.end();if(surface.hasPointerCapture?.(e.pointerId))surface.releasePointerCapture(e.pointerId)};
   surface.addEventListener('pointerup',end,true);surface.addEventListener('pointercancel',()=>api.end(),true);surface.addEventListener('pointerleave',()=>api.leave(),true);
   surface.addEventListener('click',e=>handled(e),true);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){api.setTool('navigate');api.leave();onCancel()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!/INPUT|TEXTAREA/.test(e.target.tagName)){e.preventDefault();api.undo()}});
+  (surface.ownerDocument||document).addEventListener('keydown',e=>{if(e.key==='Escape'){api.setTool('navigate');api.leave();onCancel()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!/INPUT|TEXTAREA/.test(e.target.tagName)){e.preventDefault();api.undo()}});
  }
 };
