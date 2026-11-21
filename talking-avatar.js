@@ -7,6 +7,8 @@ for(const a of Object.values(characterAssets)){a.image=new Image();a.ready=false
 function currentCharacter(){return $('characterSelect').value==='onion'?'onion':'teacher'}
 function trackedTeacherJaw(now){if(now<teacherDemoUntil)return Math.max(0,Math.sin((now-teacherDemoUntil)/190)*.65+.35);if(!state.camera||!state.workerReady||now-state.faceTime>650)return 0;const signal=Math.max(0,Math.min(1,((state.face?.blends?.jawOpen||0)-.018)*3.8));return Math.pow(signal,.72)}
 function chosenGesture(now,jaw){const mode=$('gestureMode').value;if(mode!=='auto')return{neutral:0,explain:1,point:2}[mode]||0;if(jaw>.08)lastSpeaking=now;return now-lastSpeaking<850?1+Math.floor(now/1800)%2:0}
+// 講師 T 恤胸前印上洋蔥寶寶與「車城國小資訊老師設計」。
+function drawShirtBadge(g,W,H){const o=characterAssets.onion;if(!o.ready)return;const cx=W/2,top=H*.475,fs=Math.round(W*.032);g.save();g.font=`700 ${fs}px "Noto Sans TC",sans-serif`;g.textAlign='center';g.textBaseline='top';g.fillStyle='#f4f1e6';g.fillText('車城國小資訊老師設計',cx,top);const sh=H*.15,src=[o.image.naturalWidth/3*.31,0,o.image.naturalWidth/3*.5,o.image.naturalHeight],sw=sh*src[2]/src[3];g.drawImage(o.image,...src,cx-sw/2,top+fs*1.4,sw,sh);g.restore()}
 function drawTeacherTexture(now){
  if(now-lastTeacherFrame<30)return;lastTeacherFrame=now;const a=characterAssets[currentCharacter()],W=a.w,H=a.h,g=teacherTextureCtx;if(!a.ready)return;
  const target=trackedTeacherJaw(now);teacherJaw+=(target-teacherJaw)*.5;if(teacherJaw<.008)teacherJaw=0;
@@ -20,6 +22,7 @@ function drawTeacherTexture(now){
   polygons[pose].forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.clip();g.drawImage(a.image,0,0);
  }else g.drawImage(a.image,pose*sw,0,sw,a.image.naturalHeight,offset,0,W,H);
  g.restore();
+ if(isTeacher)drawShirtBadge(g,W,H);
  const mx=isTeacher?W/2:a.mouths[0][0]*W,my=m[1]*H,half=m[2]*(isTeacher?sw*sourceScale:W),strength=Math.max(.5,Math.min(1.8,Number($('mouthStrength').value)/100||1.2));
  if(currentCharacter()==='onion'){
   if(teacherJaw<.01)return;
